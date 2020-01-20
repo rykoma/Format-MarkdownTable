@@ -2,7 +2,7 @@
 # Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 # https://github.com/rykoma/Format-MarkdownTable
 
-# Version 1.0
+# Version 1.1
 
 function Format-MarkdownTable {
     [CmdletBinding()]
@@ -49,8 +49,11 @@ function Format-MarkdownTable {
             elseif ($InputObject.GetType() -eq [System.Collections.ArrayList]) {
                 $Temp = "{" + [System.String]::Join(", ", $InputObject.ToArray()) + "}"
             }
-            else {
+            elseif (Get-Member -InputObject $InputObject -Name ToString -MemberType Method) {
                 $Temp = $InputObject.ToString()
+            }
+            else {
+                $Temp = ""
             }
 
             return $Temp.Replace("*", "\*")
@@ -123,7 +126,7 @@ function Format-MarkdownTable {
         if ($FormatTableStyle.IsPresent) {
             $HeaderRow = "|"
             $SeparatorRow = "|"
-            $ContentRow = "|"
+            $ContentRow = ""
 
             foreach ($Prop in $HeadersForFormatTableStlye) {
                 $HeaderRow += "$(EscapeMarkdown($Prop))|"
@@ -133,6 +136,7 @@ function Format-MarkdownTable {
 
             foreach ($Content in $ContentsForFormatTableStyle) {
                 $TempOutput = New-Object PSCustomObject
+                $ContentRow += "|"
 
                 foreach ($Prop in $HeadersForFormatTableStlye) {
                     $ContentRow += "$(EscapeMarkdown($Content.($($Prop))))|"
@@ -170,53 +174,3 @@ function Format-MarkdownTable {
         }
     }
 }
-
-## one object
-
-# Get-Mailbox rykoma | Format-MarkdownTable
-
-# Get-Mailbox rykoma | Format-MarkdownTable -FormatTableStyle
-
-# Get-Mailbox rykoma | Format-MarkdownTable UserPrincipalName, PrimaryS*, Alias
-
-# Get-Mailbox rykoma | Format-MarkdownTable UserPrincipalName, PrimaryS*, Alias -FormatTableStyle
-
-# Get-Mailbox rykoma | Format-MarkdownTable -Property UserPrincipalName,PrimarySmtpAddress,DisplayName
-
-# Get-Mailbox rykoma | Format-MarkdownTable -Property UserPrincipalName,PrimarySmtpAddress,DisplayName -FormatTableStyle
-
-# Format-MarkdownTable -InputObject:(Get-Mailbox rykoma) UserPrincipalName,PrimarySmtpAddress,Database
-
-# Format-MarkdownTable -InputObject:(Get-Mailbox rykoma) UserPrincipalName,PrimarySmtpAddress,Database -FormatTableStyle
-
-# Format-MarkdownTable -InputObject:(Get-Mailbox rykoma) -Property UserPrincipalName,PrimarySmtpAddress,Alias
-
-# Format-MarkdownTable -InputObject:(Get-Mailbox rykoma) -Property UserPrincipalName,PrimarySmtpAddress,Alias -FormatTableStyle
-
-## multi object
-
-# Get-Mailbox remoteuser* | Format-MarkdownTable
-
-# Get-Mailbox remoteuser* | Format-MarkdownTable -FormatTableStyle
-
-# Get-Mailbox remoteuser* | Format-MarkdownTable UserPrincipalName, PrimaryS*, Alias
-
-# Get-Mailbox remoteuser* | Format-MarkdownTable UserPrincipalName, PrimaryS*, Alias -FormatTableStyle
-
-# Get-Mailbox remoteuser* | Format-MarkdownTable -Property UserPrincipalName,PrimarySmtpAddress,DisplayName
-
-# Get-Mailbox remoteuser* | Format-MarkdownTable -Property UserPrincipalName,PrimarySmtpAddress,DisplayName -FormatTableStyle
-
-# Format-MarkdownTable -InputObject:(Get-Mailbox remoteuser*) UserPrincipalName, PrimarySmtpAddress, Database
-
-# Format-MarkdownTable -InputObject:(Get-Mailbox remoteuser*) UserPrincipalName,PrimarySmtpAddress,Database -FormatTableStyle
-
-# Format-MarkdownTable -InputObject:(Get-Mailbox remoteuser*) -Property UserPrincipalName,PrimarySmtpAddress,Alias
-
-# Format-MarkdownTable -InputObject:(Get-Mailbox remoteuser*) -Property UserPrincipalName,PrimarySmtpAddress,Alias -FormatTableStyle
-
-## result contains array
-
-# get-mailbox rykoma | Format-MarkdownTable email*
-
-# get-mailbox rykoma | Format-MarkdownTable email* -FormatTableStyle
