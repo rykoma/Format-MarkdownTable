@@ -32,7 +32,7 @@ function Format-MarkdownTable {
 
         [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $false)]
         [string[]]
-        $Property = @("*")
+        $Property = @()
     )
     
     Begin {
@@ -59,6 +59,34 @@ function Format-MarkdownTable {
             return $Temp.Replace("*", "\*")
         }
 
+        function GetDefaultDisplayProperty([object]$InputObject) {
+            try {
+                if ($null -eq $InputObject) {
+                    return @("*")
+                }
+    
+                $DataType = ($InputObject | Get-Member)[0].TypeName
+    
+                if ($DataType.StartsWith("Selected.")) {
+                    return @("*")
+                }            
+                elseif ($DataType.StartsWith("Deserialized.")) {
+                    $DataType = $DataType.Trim("Deserialized.")
+                }
+    
+                $FormatData = Get-FormatData -TypeName $DataType -ErrorAction SilentlyContinue
+    
+                if ($null -eq $FormatData) {
+                    return @("*")
+                }
+    
+                return $FormatData.FormatViewDefinition.Control.Headers.Label
+            }
+            catch {
+                return @("*")
+            }
+        }
+
         if ($null -ne $InputObject -and $InputObject.GetType().BaseType -eq [System.Array]) {
             Write-Error "InputObject must not be System.Array. Don't use InputObject, but use the pipeline to pass the array object."
             $NeedToReturn = $true
@@ -81,9 +109,23 @@ function Format-MarkdownTable {
         $CurrentObject = $null
 
         if ($_ -eq $null) {
+            if ($FormatTableStyle.IsPresent -and (($Property.Length -eq 0) -or ($Property.Length -eq 1 -and $Property[0] -eq ""))) {
+                $Property = GetDefaultDisplayProperty($InputObject)
+            }
+            elseif (($Property.Length -eq 0) -or ($Property.Length -eq 1 -and $Property[0] -eq "")) {
+                $Property = @("*")
+            }
+
             $CurrentObject = $InputObject | Select-Object -Property $Property
         }
         else {
+            if ($FormatTableStyle.IsPresent -and (($Property.Length -eq 0) -or ($Property.Length -eq 1 -and $Property[0] -eq ""))) {
+                $Property = GetDefaultDisplayProperty($_)
+            }
+            elseif (($Property.Length -eq 0) -or ($Property.Length -eq 1 -and $Property[0] -eq "")) {
+                $Property = @("*")
+            }
+
             $CurrentObject = $_ | Select-Object -Property $Property
         }
 
@@ -174,3 +216,5 @@ function Format-MarkdownTable {
         }
     }
 }
+
+Get-Mailbox | fm -ft
