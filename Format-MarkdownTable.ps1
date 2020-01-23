@@ -2,7 +2,7 @@
 # Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 # https://github.com/rykoma/Format-MarkdownTable
 
-# Version 1.1
+# Version 1.3.1
 
 function Format-MarkdownTable {
     [CmdletBinding()]
