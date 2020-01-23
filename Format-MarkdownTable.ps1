@@ -80,7 +80,7 @@ function Format-MarkdownTable {
                     return @("*")
                 }
     
-                return $FormatData.FormatViewDefinition.Control.Headers.Label
+                return $FormatData.FormatViewDefinition.Control.Rows.Columns.DisplayEntry.Value
             }
             catch {
                 return @("*")
@@ -216,5 +216,3 @@ function Format-MarkdownTable {
         }
     }
 }
-
-Get-Mailbox | fm -ft
